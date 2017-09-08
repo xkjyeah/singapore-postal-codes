@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     all_buildings = pool.map(pcode_to_data, postal_codes)
     
-    jstr = json.dumps([y for x in all_buildings for y in x], indent=2)
+    jstr = json.dumps([y for x in all_buildings for y in x], indent=2, sort_keys=True)
 
     with open('buildings.json', 'w') as f:
         f.write(jstr.encode('utf-8'))
