@@ -1,33 +1,51 @@
+#!/usr/bin/env python3
 import json
 import re
 
-all_buildings = json.load(open('./buildings.json'))
+# Update 1 Dec 2017: OneMap has removed the station numbers from 
+# their database. Therefore I have copied in the data from LTA's
+# DataMall
 
-# in Onemap's database, MRT stations take the form
-# either: (NS2)
-# or: (EW24 / NS1)
-mrt_station_code = re.compile('\\(([A-Z]{1,2}[0-9]{1,2}(?: / )?)+\\)')
+ALL_BUILDINGS = json.load(open('./buildings.json'))
 
-def is_station(type, s):
-    return (
-        '{} STATION'.format(type) in s['BUILDING'] and
-        mrt_station_code.search(s['ADDRESS']) is not None
-    )
+MRT_STATION_CODE = re.compile('\\(([A-Z]{1,2}[0-9]{1,2}(?: / )?)+\\)')
 
-def update_station(type, s):
-    match = mrt_station_code.search(s['ADDRESS'])
+DATA_MALL_MRT_STATIONS = list(open('./MRT English & Chinese names.csv', 'r', encoding='utf-16'))[1:]
 
-    s.update({
-        'Station': match.group(0)
-    })
 
-mrt_stations = [x for x in all_buildings if is_station('MRT', x)]
+def extract_station_number_and_name(line):
+    number, angmoh, _, _, _ = line.strip().split('\t')
+    
+    return {
+        'Station': number,
+        'Station Name': angmoh,
+    }
+    
+def add_onemap_data(stn):
+    # Kids, this is inefficient -- you should use a hashtable, especially
+    # if you want to work for Google. On the other hand, our dataset is
+    # small-ish so it doesn't matter
+    
+    # print(stn['Station Name'].upper() + ' MRT STATION')
+    # print(list(filter(lambda x: (stn['Station Name'].upper() + ' MRT STATION') == x['BUILDING'], ALL_BUILDINGS)))
+    
+    matching_onemap_entries = [
+        o for o in ALL_BUILDINGS
+        if o['BUILDING'] == stn['Station Name'].upper() + ' MRT STATION'
+    ]
+    
+    # Unfortunately, OneMap data no longer has the station line and
+    # number, so we cannot positively identify which station belongs
+    # to which line. Instead, I give you *all* possible stations.
+    stn['Possible Locations'] = matching_onemap_entries
+    
+    return stn
+    
 
-for m in mrt_stations:
-    update_station('MRT', m)
-
-print(json.dumps(mrt_stations, indent=2))
-print(json.dumps(sorted([x['Station'] for x in mrt_stations]), indent=2))
-
-with open('mrt_stations.json', 'w') as f:
-    f.write(json.dumps(mrt_stations, indent=2))
+if __name__ == '__main__':
+    mrt_stations = map(extract_station_number_and_name, DATA_MALL_MRT_STATIONS)
+    
+    mrt_stations = map(add_onemap_data, mrt_stations)
+    
+    with open('mrt_stations.json', 'w') as f:
+        f.write(json.dumps(list(mrt_stations), indent=2, sort_keys=True))
