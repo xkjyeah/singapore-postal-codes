@@ -1,33 +1,12 @@
+#!/usr/bin/env python3
 import json
-import re
 
-all_buildings = json.load(open('./buildings.json'))
+from mrt_lrt import DATA_MALL_MRT_STATIONS, is_mrt_station, extract_station_number_and_name, add_onemap_data
 
-# in Onemap's database, MRT stations take the form
-# either: (NS2)
-# or: (EW24 / NS1)
-lrt_station_code = re.compile('\\(([A-Z]{1,2}[0-9]{1,2}(?: / )?)+\\)')
-
-def is_station(type, s):
-    return (
-        '{} STATION'.format(type) in s['BUILDING'] and
-        lrt_station_code.search(s['ADDRESS']) is not None
-    )
-
-def update_station(type, s):
-    match = lrt_station_code.search(s['ADDRESS'])
-
-    s.update({
-        'Station': match.group(0)
-    })
-
-lrt_stations = [x for x in all_buildings if is_station('LRT', x)]
-
-for m in lrt_stations:
-    update_station('LRT', m)
-
-print(json.dumps(lrt_stations, indent=2))
-print(json.dumps(sorted([x['Station'] for x in lrt_stations]), indent=2))
-
-with open('lrt_stations.json', 'w') as f:
-    f.write(json.dumps(lrt_stations, indent=2))
+if __name__ == '__main__':
+    lrt_stations = map(extract_station_number_and_name, DATA_MALL_MRT_STATIONS)
+    lrt_stations = filter(lambda s: not is_mrt_station(s), lrt_stations)
+    lrt_stations = map(lambda s: add_onemap_data(s, station_type='LRT'), lrt_stations)
+    
+    with open('lrt_stations.json', 'w') as f:
+        f.write(json.dumps(list(lrt_stations), indent=2, sort_keys=True))
