@@ -38,7 +38,8 @@ if __name__ == '__main__':
     postal_codes = ['{0:06d}'.format(p) for p in postal_codes]
 
     all_buildings = pool.map(pcode_to_data, postal_codes)
-    
+    all_buildings.sort(key=lambda b: (b['POSTAL'], b['SEARCHVAL']))
+
     jstr = json.dumps([y for x in all_buildings for y in x], indent=2, sort_keys=True)
 
     with open('buildings.json', 'w') as f:
