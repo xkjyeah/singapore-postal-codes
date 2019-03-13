@@ -14,3 +14,21 @@ Note: Use of the data is governed by the [Open Data Licence](https://www.onemap.
  if the date is specified in the commit message.
 - This data dump contains information from MyTransport.sg static data, accessed 1 Dec 2017.
 
+
+#### Example of data format
+
+```json
+  {
+    "ADDRESS": "38 OXLEY ROAD SINGAPORE 238629",
+    "BLK_NO": "38",
+    "BUILDING": "NIL",
+    "LATITUDE": "1.29795796774359",
+    "LONGITUDE": "103.84076054217",
+    "LONGTITUDE": "103.84076054217",
+    "POSTAL": "238629",
+    "ROAD_NAME": "OXLEY ROAD",
+    "SEARCHVAL": "38 OXLEY ROAD SINGAPORE 238629",
+    "X": "28828.2243867859",
+    "Y": "31147.1173346285"
+  }
+```
